@@ -4,7 +4,7 @@
 
 _Last Update: Aug 21, 2018_
 
-This tutorial is modified from another tutorial made for the CS 646 course at UMass Amherst in Fall 2016.
+This tutorial is modified from another tutorial made for the CS 646 course at UMass Amherst in Fall 2016: https://github.com/jiepujiang/cs646_tutorials.
 
 A quick index:
 * [Installation](https://github.com/jiepujiang/LuceneExamples#installation)
