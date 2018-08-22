@@ -4,17 +4,19 @@
 
 _Last Update: Aug 21, 2018_
 
+This tutorial is modified from another tutorial made for the CS 646 course at UMass Amherst in Fall 2016.
+
 A quick index:
-* [Installation](https://github.com/jiepujiang/cs646_tutorials#installation)
-* [Building an Index](https://github.com/jiepujiang/cs646_tutorials#build-an-index)
-* [Working with an Index](https://github.com/jiepujiang/cs646_tutorials#working-with-an-index)
-    * [External and Internal IDs](https://github.com/jiepujiang/cs646_tutorials#external-and-internal-ids)
-    * [Frequency Posting List](https://github.com/jiepujiang/cs646_tutorials#frequency-posting-list)
-    * [Position Posting List](https://github.com/jiepujiang/cs646_tutorials#position-posting-list)
-    * [Accessing an Indexed Document](https://github.com/jiepujiang/cs646_tutorials#accessing-an-indexed-document)
-    * [Document and Field Length](https://github.com/jiepujiang/cs646_tutorials#document-and-field-length)
-    * [Corpus-level Statistics](https://github.com/jiepujiang/cs646_tutorials#corpus-level-statistics)
-* [Searching](https://github.com/jiepujiang/cs646_tutorials#searching)
+* [Installation](https://github.com/jiepujiang/LuceneExamples#installation)
+* [Building an Index](https://github.com/jiepujiang/LuceneExamples#build-an-index)
+* [Working with an Index](https://github.com/jiepujiang/LuceneExamples#working-with-an-index)
+    * [External and Internal IDs](https://github.com/jiepujiang/LuceneExamples#external-and-internal-ids)
+    * [Frequency Posting List](https://github.com/jiepujiang/LuceneExamples#frequency-posting-list)
+    * [Position Posting List](https://github.com/jiepujiang/LuceneExamples#position-posting-list)
+    * [Accessing an Indexed Document](https://github.com/jiepujiang/LuceneExamples#accessing-an-indexed-document)
+    * [Document and Field Length](https://github.com/jiepujiang/LuceneExamples#document-and-field-length)
+    * [Corpus-level Statistics](https://github.com/jiepujiang/LuceneExamples#corpus-level-statistics)
+* [Searching](https://github.com/jiepujiang/LuceneExamples#searching)
 
 ## Environment
 
@@ -209,7 +211,7 @@ ixwriter.close();
 dir.close();
 ```
 
-You can download the Lucene index for the example corpus at https://github.com/jiepujiang/cs646_tutorials/blob/master/example_index_lucene.tar.gz
+You can download the Lucene index for the example corpus at https://github.com/jiepujiang/LuceneExamples/blob/master/example_index_lucene.tar.gz
 
 ## Working with an Index
 
