@@ -66,7 +66,7 @@ Support:
 ### Corpus
 
 This tutorial uses a small trectext format corpus (trectext is a popular format for data collections in information retrieval research).
-You can download the corpus at https://github.com/jiepujiang/lucene_examples/blob/master/example_corpus.gz
+You can download the corpus at https://github.com/jiepujiang/LuceneExamples/blob/master/example_corpus.gz
 
 The corpus includes the information of about 100 articles published in the SIGIR conferences.
 Each article (document) is in the following format:
