@@ -2,9 +2,11 @@
 ## VT CS 5604 Information Retrieval (Fall 2018)
 ## A Simple Tutorial of Lucene (for CS 5604 Students)
 
-_Last Update: Aug 21, 2018_
+_Last Update: Aug 27, 2018_
 
 This tutorial is modified from another tutorial made for the CS 646 course at UMass Amherst in Fall 2016: https://github.com/jiepujiang/cs646_tutorials.
+
+You can check out the source code of all examples in edu.vt.cs.ir.examples
 
 A quick index:
 * [Installation](https://github.com/jiepujiang/LuceneExamples#installation)
@@ -248,7 +250,7 @@ These IDs are often subject to change and not transparent to the users.
 So you often need to transform between external and internal IDs when locating documents in an index.
 
 To help you get started quickly, we provide
-a utility class ```edu.vt.cs.ir.lucene.LuceneUtils``` to help you transform between 
+a utility class ```edu.vt.cs.ir.lucene.utils.LuceneUtils``` to help you transform between 
 the two IDs.
 ```java
 IndexReader index = DirectoryReader.open( dir );
@@ -687,6 +689,20 @@ DOCID     DOCNO          Length
 106       ACM-2609485    109       
 107       ACM-2609536    194       
 ```
+
+An alternative (and faster) way is to store the length information of an index field to a file 
+(sorted by docid), such that you can efficiently search for the length of a particular docid. 
+We provided a simple implementation of this method in ```edu.vt.cs.ir.utils.DocLengthReader```.
+After building a regular Lucene index, you can use ```DocLengthReader```'s main function to dump 
+document length statistics to a file (by default, ```DocLengthReader``` outputs to a file in the
+Lucene index directory with name ```dl.$fieldname```). ```DocLengthReader.getLength(docid)``` 
+offers the functionality of searching document length.
+
+Note that Lucene's internal docid is subject to change if you make any changes to the index 
+(such as adding & removing an indexed document, merging several indexes, or optimizing an 
+existing index). As a result, you need to update the external document length files every time
+you have updated Lucene's index. However, this would not cause much concerns in our course because 
+we'll only work with static test collections.
 
 ### Corpus-level Statistics
 

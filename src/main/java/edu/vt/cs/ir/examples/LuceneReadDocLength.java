@@ -1,4 +1,4 @@
-package edu.vt.cs.ir.lucene;
+package edu.vt.cs.ir.examples;
 
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;

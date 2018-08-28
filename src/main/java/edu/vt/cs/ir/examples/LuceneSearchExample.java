@@ -1,5 +1,6 @@
-package edu.vt.cs.ir.lucene;
+package edu.vt.cs.ir.examples;
 
+import edu.vt.cs.ir.utils.LuceneUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
