@@ -6,7 +6,7 @@ _Last Update: Aug 27, 2018_
 
 This tutorial is modified from another tutorial made for the CS 646 course at UMass Amherst in Fall 2016: https://github.com/jiepujiang/cs646_tutorials.
 
-You can check out the source code of all examples in edu.vt.cs.ir.examples
+You can check out the source code of all examples in ```edu.vt.cs.ir.examples```.
 
 A quick index:
 * [Installation](https://github.com/jiepujiang/LuceneExamples#installation)
