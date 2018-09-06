@@ -17,7 +17,7 @@ import java.nio.file.Path;
  * Use the main Function to dump document/field length information to a local file.
  *
  * @author Jiepu Jiang (jiepu@cs.vt.edu)
- * @version 2018-08-27
+ * @version 2018-09-04
  */
 public class DocLengthReader {
 
@@ -29,6 +29,8 @@ public class DocLengthReader {
 
     protected int start;
     protected int bufferSize;
+
+    protected double avg_dl;
 
     private static File getDocLengthFile( File dirIndex, String field ) {
         return new File( dirIndex, DEFAULT_PREFIX + field );
@@ -50,7 +52,15 @@ public class DocLengthReader {
      * @throws IOException
      */
     public DocLengthReader( File dirIndex, String field, int bufferSize ) throws IOException {
-        Path path = getDocLengthFile( dirIndex, field ).toPath();
+        File f = getDocLengthFile( dirIndex, field );
+        DataInputStream dis = new DataInputStream( new FileInputStream( f ) );
+        long skip = 0;
+        while ( skip < f.length() - 8 ) {
+            skip += dis.skip( f.length() - skip - 8 );
+        }
+        avg_dl = dis.readDouble();
+        dis.close();
+        Path path = f.toPath();
         this.fch = FileChannel.open( path );
         this.start = 0;
         this.bufferSize = bufferSize;
@@ -82,8 +92,20 @@ public class DocLengthReader {
         fch.close();
     }
 
+    /**
+     * @return The average length of the document field.
+     */
+    public double averageLength() {
+        return avg_dl;
+    }
+
     public static void main( String[] args ) {
         try {
+
+            args = new String[]{
+                    "C:\\Users\\Jiepu\\Downloads\\index_lucene_robust04_krovetz",
+                    "content"
+            };
 
             String pathIndex = args[ 0 ]; // path of the index
             String[] fields = args[ 1 ].split( ";" ); // name of a list of index fields, separated by ;
@@ -97,6 +119,8 @@ public class DocLengthReader {
                 File f = DocLengthReader.getDocLengthFile( dirIndex, field );
                 try {
                     System.out.println( " >> Dumping document length for field " + field );
+                    double avdl = 0;
+                    double count = 0;
                     DataOutputStream dos = new DataOutputStream( new BufferedOutputStream( new FileOutputStream( f ), 16 * 1024 * 1024 ) );
                     for ( int docid = 0; docid < index.numDocs(); docid++ ) {
                         if ( docid > 0 && docid % 1000000 == 0 ) {
@@ -109,7 +133,10 @@ public class DocLengthReader {
                             doclen += (int) iterator.totalTermFreq();
                         }
                         dos.writeInt( doclen );
+                        avdl += doclen;
+                        count++;
                     }
+                    dos.writeDouble( avdl / count );
                     dos.close();
                 } catch ( Exception e ) {
                     e.printStackTrace();
