@@ -706,6 +706,150 @@ existing index). As a result, you need to update the external document length fi
 you have updated Lucene's index. However, this would not cause much concerns in our course because 
 we'll only work with static test collections.
 
+### Iterate Through the Vocabulary 
+
+The following program iterates through the vocabulary and print out the first 100 words in the 
+vocabulary and some word statistics.
+```java
+String pathIndex = "/Users/jiepu/Downloads/example_index_lucene";
+String field = "text";
+
+Directory dir = FSDirectory.open( new File( pathIndex ).toPath() );
+IndexReader index = DirectoryReader.open( dir );
+
+double N = index.numDocs();
+double corpusLength = index.getSumTotalTermFreq( field );
+
+System.out.printf( "%-30s%-10s%-10s%-10s%-10s\n", "TERM", "DF", "TOTAL_TF", "IDF", "p(w|c)" );
+
+// Get the vocabulary of the index.
+Terms voc = MultiFields.getTerms( index, field );
+// You need to use TermsEnum to iterate each entry of the vocabulary.
+TermsEnum termsEnum = voc.iterator();
+BytesRef term;
+int count = 0;
+while ( ( term = termsEnum.next() ) != null ) {
+    count++;
+    String termstr = term.utf8ToString(); // get the text string of the term
+    int df = termsEnum.docFreq(); // get the document frequency (DF) of the term
+    long freq = termsEnum.totalTermFreq(); // get the total frequency of the term
+    double idf = Math.log( ( N + 1 ) / ( df + 1 ) );
+    double pwc = freq / corpusLength;
+    System.out.printf( "%-30s%-10d%-10d%-10.2f%-10.8f\n", termstr, df, freq, idf, pwc );
+    if ( count >= 100 ) {
+        break;
+    }
+}
+
+index.close();
+dir.close();
+```
+
+The output is:
+```
+TERM                          DF        TOTAL_TF  IDF       p(w|c)    
+0.1                           1         1         4.00      0.00008280
+1                             9         12        2.39      0.00099362
+1,800                         1         1         4.00      0.00008280
+10                            2         2         3.59      0.00016560
+12                            1         1         4.00      0.00008280
+15                            1         1         4.00      0.00008280
+16.23                         1         1         4.00      0.00008280
+2                             9         10        2.39      0.00082802
+20                            1         1         4.00      0.00008280
+2002                          2         2         3.59      0.00016560
+2004                          1         1         4.00      0.00008280
+2007                          1         1         4.00      0.00008280
+23                            2         2         3.59      0.00016560
+25                            1         1         4.00      0.00008280
+3                             4         6         3.08      0.00049681
+30                            1         1         4.00      0.00008280
+4                             2         2         3.59      0.00016560
+40                            1         1         4.00      0.00008280
+5                             2         2         3.59      0.00016560
+50                            2         2         3.59      0.00016560
+51                            1         1         4.00      0.00008280
+6.4                           1         1         4.00      0.00008280
+6.48                          1         1         4.00      0.00008280
+60s                           2         2         3.59      0.00016560
+61                            1         1         4.00      0.00008280
+65                            1         1         4.00      0.00008280
+66                            1         1         4.00      0.00008280
+69                            1         1         4.00      0.00008280
+7                             1         1         4.00      0.00008280
+70                            1         1         4.00      0.00008280
+70s                           1         1         4.00      0.00008280
+80s                           1         1         4.00      0.00008280
+87                            1         1         4.00      0.00008280
+90s                           1         1         4.00      0.00008280
+92                            1         1         4.00      0.00008280
+94                            1         1         4.00      0.00008280
+95                            3         4         3.31      0.00033121
+a                             80        338       0.30      0.02798708
+abandonment                   1         1         4.00      0.00008280
+ability                       5         6         2.90      0.00049681
+able                          4         4         3.08      0.00033121
+about                         5         11        2.90      0.00091082
+above                         2         2         3.59      0.00016560
+absence                       1         1         4.00      0.00008280
+abstract                      27        27        1.36      0.00223565
+abstracts                     2         2         3.59      0.00016560
+academic                      1         1         4.00      0.00008280
+acceptable                    1         1         4.00      0.00008280
+acceptance                    1         1         4.00      0.00008280
+accepted                      1         1         4.00      0.00008280
+access                        3         6         3.31      0.00049681
+accessing                     1         1         4.00      0.00008280
+accomplished                  1         1         4.00      0.00008280
+according                     4         5         3.08      0.00041401
+account                       1         1         4.00      0.00008280
+accumulator                   1         1         4.00      0.00008280
+accuracy                      7         12        2.61      0.00099362
+accurate                      4         4         3.08      0.00033121
+accurately                    1         1         4.00      0.00008280
+achieve                       4         5         3.08      0.00041401
+achieved                      5         5         2.90      0.00041401
+achievements                  1         1         4.00      0.00008280
+achieves                      3         3         3.31      0.00024841
+achieving                     4         5         3.08      0.00041401
+acknowledged                  1         1         4.00      0.00008280
+acm                           1         1         4.00      0.00008280
+acquire                       1         1         4.00      0.00008280
+acquiring                     1         1         4.00      0.00008280
+across                        6         8         2.75      0.00066242
+actions                       1         1         4.00      0.00008280
+activeness                    1         1         4.00      0.00008280
+actual                        2         2         3.59      0.00016560
+actually                      1         1         4.00      0.00008280
+ad                            5         6         2.90      0.00049681
+adapting                      1         1         4.00      0.00008280
+adaptive                      2         5         3.59      0.00041401
+added                         2         2         3.59      0.00016560
+addition                      4         4         3.08      0.00033121
+additional                    3         3         3.31      0.00024841
+address                       4         4         3.08      0.00033121
+addressable                   1         1         4.00      0.00008280
+addressing                    2         2         3.59      0.00016560
+adequate                      1         1         4.00      0.00008280
+adhoc                         1         1         4.00      0.00008280
+adopted                       2         2         3.59      0.00016560
+advance                       1         1         4.00      0.00008280
+advanced                      1         1         4.00      0.00008280
+advances                      3         4         3.31      0.00033121
+advantages                    3         3         3.31      0.00024841
+advent                        1         1         4.00      0.00008280
+affected                      2         2         3.59      0.00016560
+affecting                     1         1         4.00      0.00008280
+affinity                      1         1         4.00      0.00008280
+after                         2         2         3.59      0.00016560
+against                       2         3         3.59      0.00024841
+aggregated                    1         1         4.00      0.00008280
+ai                            1         2         4.00      0.00016560
+aimed                         1         1         4.00      0.00008280
+aims                          1         1         4.00      0.00008280
+airlines                      1         1         4.00      0.00008280
+```
+
 ### Corpus-level Statistics
 
 ```IndexReader``` provides many corpus-level statistics.
