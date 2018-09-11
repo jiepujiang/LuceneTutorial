@@ -2,7 +2,7 @@
 ## VT CS 5604 Information Retrieval (Fall 2018)
 ## A Simple Tutorial of Lucene (for CS 5604 Students)
 
-_Last Update: Aug 27, 2018_
+_Last Update: Sep 11, 2018_
 
 This tutorial is modified from another tutorial I made for the CS 646 course at UMass Amherst in Fall 2016: https://github.com/jiepujiang/cs646_tutorials.
 
