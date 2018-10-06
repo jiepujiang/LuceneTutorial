@@ -1,6 +1,6 @@
 
-## VT CS 5604 Information Retrieval (Fall 2018)
-## A Simple Tutorial of Lucene (for CS 5604 Students)
+## Virginia Tech CS 5604: Information Storage & Retrieval (Fall 2018)
+## A Simple Tutorial of Lucene
 
 _Last Update: Sep 11, 2018_
 
