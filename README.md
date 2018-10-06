@@ -2,7 +2,7 @@
 ## Virginia Tech CS 5604: Information Storage & Retrieval (Fall 2018)
 ## A Simple Tutorial of Lucene
 
-_Last Update: Sep 11, 2018_
+_Last Update: Oct 5, 2018_
 
 This tutorial is modified from another tutorial I made for the CS 646 course at UMass Amherst in Fall 2016: https://github.com/jiepujiang/cs646_tutorials.
 
@@ -19,7 +19,7 @@ A quick index:
     * [Position Posting List](https://github.com/jiepujiang/LuceneExamples#position-posting-list)
     * [Accessing an Indexed Document](https://github.com/jiepujiang/LuceneExamples#accessing-an-indexed-document)
     * [Document and Field Length](https://github.com/jiepujiang/LuceneExamples#document-and-field-length)
-    * [Iterate through the Vocabulary](https://github.com/jiepujiang/LuceneExamples#iterate-through-the-vocabulary)
+    * [Iterate Through the Vocabulary](https://github.com/jiepujiang/LuceneExamples#iterate-through-the-vocabulary)
     * [Corpus-level Statistics](https://github.com/jiepujiang/LuceneExamples#corpus-level-statistics)
 * [Searching](https://github.com/jiepujiang/LuceneExamples#searching)
 
@@ -849,47 +849,6 @@ ai                            1         2         4.00      0.00016560
 aimed                         1         1         4.00      0.00008280
 aims                          1         1         4.00      0.00008280
 airlines                      1         1         4.00      0.00008280
-```
-
-### Iterate through the Vocabulary
-
-You can get a ```TermsEnum``` to iterate through words in the vocabulary using ```MultiFields.getTerms()```.
-The follow program computes statistics for the first 100 words in the vocabulary.
-```java
-String pathIndex = "/Users/jiepu/Downloads/example_index_lucene";
-
-// Let's just retrieve the vocabulary of the "text" field
-String field = "text";
-
-Directory dir = FSDirectory.open( new File( pathIndex ).toPath() );
-IndexReader index = DirectoryReader.open( dir );
-
-double N = index.numDocs();
-double corpusLength = index.getSumTotalTermFreq( field );
-
-System.out.printf( "%-30s%-10s%-10s%-10s%-10s\n", "TERM", "DF", "TOTAL_TF", "IDF", "p(w|c)" );
-
-// Get the vocabulary of the index.
-Terms voc = MultiFields.getTerms( index, field );
-// You need to use TermsEnum to iterate each entry of the vocabulary.
-TermsEnum termsEnum = voc.iterator();
-BytesRef term;
-int count = 0;
-while ( ( term = termsEnum.next() ) != null ) {
-    count++;
-    String termstr = term.utf8ToString(); // get the text string of the term
-    int df = termsEnum.docFreq(); // get the document frequency (DF) of the term
-    long freq = termsEnum.totalTermFreq(); // get the total frequency of the term
-    double idf = Math.log( ( N + 1 ) / ( df + 1 ) );
-    double pwc = freq / corpusLength;
-    System.out.printf( "%-30s%-10d%-10d%-10.2f%-10.8f\n", termstr, df, freq, idf, pwc );
-    if ( count >= 100 ) {
-        break;
-    }
-}
-
-index.close();
-dir.close();
 ```
 
 ### Corpus-level Statistics
