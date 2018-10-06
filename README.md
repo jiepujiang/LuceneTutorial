@@ -19,7 +19,7 @@ A quick index:
     * [Position Posting List](https://github.com/jiepujiang/LuceneExamples#position-posting-list)
     * [Accessing an Indexed Document](https://github.com/jiepujiang/LuceneExamples#accessing-an-indexed-document)
     * [Document and Field Length](https://github.com/jiepujiang/LuceneExamples#document-and-field-length)
-    * [Iterate through the Vocabulary](https://github.com/jiepujiang/LuceneExamples#document-and-field-length)
+    * [Iterate through the Vocabulary](https://github.com/jiepujiang/LuceneExamples#iterate-through-the-vocabulary)
     * [Corpus-level Statistics](https://github.com/jiepujiang/LuceneExamples#corpus-level-statistics)
 * [Searching](https://github.com/jiepujiang/LuceneExamples#searching)
 
