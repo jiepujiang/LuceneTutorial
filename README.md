@@ -6,7 +6,7 @@ _Last Update: April 12, 2021_
 
 You can find the source codes of all examples in ```edu.wisc.ischool.wiscir.examples```.
 
-A quick index:
+Outline:
 * [Installation](https://github.com/jiepujiang/LuceneExamples#installation)
 * [Building an Index](https://github.com/jiepujiang/LuceneExamples#build-an-index)
 * [Working with an Index](https://github.com/jiepujiang/LuceneExamples#working-with-an-index)
