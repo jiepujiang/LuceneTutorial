@@ -1,4 +1,4 @@
-package edu.vt.cs.ir.examples;
+package edu.wisc.ischool.wiscir.examples;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -13,15 +13,15 @@ import java.util.Set;
 /**
  * In Lucene, we can store contents in an index document just let a database.
  *
- * @author Jiepu Jiang (jiepu@cs.vt.edu)
- * @version 2018-08-21
+ * @author Jiepu Jiang (jiepu.jiang@wisc.edu)
+ * @version 2021-04-12
  */
 public class LuceneReadStoredDocField {
 
     public static void main( String[] args ) {
         try {
 
-            String pathIndex = "/Users/jiepu/Downloads/example_index_lucene";
+            String pathIndex = "/home/jiepu/Downloads/example_index_lucene";
 
             // Let's just retrieve the docno (external ID) and title of the first 100 documents in the index
 

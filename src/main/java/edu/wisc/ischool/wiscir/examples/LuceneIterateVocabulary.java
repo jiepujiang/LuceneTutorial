@@ -1,4 +1,4 @@
-package edu.vt.cs.ir.examples;
+package edu.wisc.ischool.wiscir.examples;
 
 import org.apache.lucene.index.*;
 import org.apache.lucene.store.Directory;
@@ -10,15 +10,15 @@ import java.io.File;
 /**
  * This is an example for iterating the vocabulary of an index (and accessing corpus-level statistics of terms).
  *
- * @author Jiepu Jiang (jiepu@cs.vt.edu)
- * @version 2018-08-21
+ * @author Jiepu Jiang (jiepu.jiang@wisc.edu)
+ * @version 2021-04-12
  */
 public class LuceneIterateVocabulary {
 
     public static void main( String[] args ) {
         try {
 
-            String pathIndex = "/Users/jiepu/Downloads/example_index_lucene";
+            String pathIndex = "/home/jiepu/Downloads/example_index_lucene";
 
             // Let's just retrieve the vocabulary of the "text" field
             String field = "text";
@@ -32,7 +32,8 @@ public class LuceneIterateVocabulary {
             System.out.printf( "%-30s%-10s%-10s%-10s%-10s\n", "TERM", "DF", "TOTAL_TF", "IDF", "p(w|c)" );
 
             // Get the vocabulary of the index.
-            Terms voc = MultiFields.getTerms( index, field );
+
+            Terms voc = MultiTerms.getTerms( index, field );
             // You need to use TermsEnum to iterate each entry of the vocabulary.
             TermsEnum termsEnum = voc.iterator();
             BytesRef term;
@@ -40,11 +41,11 @@ public class LuceneIterateVocabulary {
             while ( ( term = termsEnum.next() ) != null ) {
                 count++;
                 String termstr = term.utf8ToString(); // get the text string of the term
-                int df = termsEnum.docFreq(); // get the document frequency (DF) of the term
+                int n = termsEnum.docFreq(); // get the document frequency (DF) of the term
                 long freq = termsEnum.totalTermFreq(); // get the total frequency of the term
-                double idf = Math.log( ( N + 1 ) / ( df + 1 ) );
+                double idf = Math.log( ( N + 1.0 ) / ( n + 1.0 ) ); // well, we normalize N and n by adding 1 to avoid n = 0
                 double pwc = freq / corpusLength;
-                System.out.printf( "%-30s%-10d%-10d%-10.2f%-10.8f\n", termstr, df, freq, idf, pwc );
+                System.out.printf( "%-30s%-10d%-10d%-10.2f%-10.8f\n", termstr, n, freq, idf, pwc );
                 if ( count >= 100 ) {
                     break;
                 }

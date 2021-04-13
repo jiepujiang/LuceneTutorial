@@ -1,14 +1,10 @@
 
-## Virginia Tech CS 5604: Information Storage & Retrieval (Fall 2018)
+## UW-Madison LIS640: Introduction to Text Mining (Spring 2021)
 ## A Simple Tutorial of Lucene
 
-_Last Update: Oct 5, 2018_
+_Last Update: April 12, 2021_
 
-This tutorial is modified from another tutorial I made for the CS 646 course at UMass Amherst in Fall 2016: https://github.com/jiepujiang/cs646_tutorials.
-
-You can check out the source code of all examples in ```edu.vt.cs.ir.examples```.
-
-You can find information about Virginia Tech CS 5604 (Information Storage & Retrieval) at the [course homepage](http://people.cs.vt.edu/~jiepu/cs5604_fall2018/) 
+You can find the source codes of all examples in ```edu.wisc.ischool.wiscir.examples```.
 
 A quick index:
 * [Installation](https://github.com/jiepujiang/LuceneExamples#installation)
@@ -26,8 +22,8 @@ A quick index:
 ## Environment
 
 This tutorial uses:
-* Oracle JDK 1.8
-* Lucene 7.4
+* Oracle JDK 11
+* Lucene 8.8.2
 
 ## Installation
 
@@ -40,31 +36,31 @@ You need to at least import ```lucene-core``` (just pasting the following to you
 <dependency>
     <groupId>org.apache.lucene</groupId>
     <artifactId>lucene-core</artifactId>
-    <version>7.4.0</version>
+    <version>8.8.2</version>
 </dependency>
 ```
 
-You may also need ```lucene-analyzers-common``` and ```lucene-queryparser``` as well.
+You may also need ```lucene-analyzers-common``` and ```lucene-queryparser```.
 
 ```xml
 <dependency>
     <groupId>org.apache.lucene</groupId>
     <artifactId>lucene-analyzers-common</artifactId>
-    <version>7.4.0</version>
+    <version>8.8.2</version>
 </dependency>
 <dependency>
     <groupId>org.apache.lucene</groupId>
     <artifactId>lucene-queryparser</artifactId>
-    <version>7.4.0</version>
+    <version>8.8.2</version>
 </dependency>
 ```
 
 If you do not use Maven, you need to download the jar files by yourself and include them into your project.
 Make sure you download the correct version.
-http://archive.apache.org/dist/lucene/java/7.4.0/
+http://archive.apache.org/dist/lucene/java/8.8.2/
 
 Support:
-* Official API documentation: http://lucene.apache.org/core/7_4_0/
+* Official API documentation: http://lucene.apache.org/core/8_8_2/
 
 ## Build an Index
 
@@ -96,17 +92,17 @@ We need to build an index for the other four text fields such that we can retrie
 
 Many IR systems may require you to specify a few text processing options for indexing and retrieval:
 * **Tokenization** -- how to split a sequence of text into individual tokens (most tokens are just words).
-The default tokenization option is usually enough for normal English-language text retrieval applications.
-* **Letter case** -- Most IR systems ignore letter case differences between tokens/words. 
+* **Case-folding** -- Most IR systems ignore letter case differences. 
 But sometimes letter case may be important, e.g., **smart** and **SMART** (the SMART retrieval system). 
 * **Stop words** -- You may want to remove some stop words such as **is**, **the**, and **to**. 
 Removing stop words can significantly reduce index size. 
 But it may also cause problems for some search queries such as ```to be or not to be```.
-We recommend you to keep them unless you cannot afford the disk space (quite cheap these days).
+We recommend you to keep them unless you cannot afford the disk space.
 * **Stemming** -- Stemmers generate [word stems](https://en.wikipedia.org/wiki/Word_stem). You may want to index stemmed words rather than the original ones to ignore minor word differences such as **model** vs. **models**.
-Stemming algorithms are not perfect and may get wrong. IR systems often use **Porter**, **Porter2**, or **Krovetz** stemming. Just a few examples for their differences:
+Stemming algorithms are not perfect and may get wrong. IR systems often use **Porter** or **Krovetz** stemming (Krovetz is more common for IR research and gives better results on most datasets based on my impression). 
+Just a few examples for their differences:
 
-Original    | Porter2   | Krovetz
+Original    | Porter    | Krovetz
 --------    | -------   | -------
 relevance   | relev     | relevance
 based       | base      | base
@@ -117,103 +113,108 @@ An indexed document can have different fields to store different types of inform
 Most IR systems support two types of fields:
 * **Metadata field** is similar to a structured database record's field. 
 They are stored and indexed as a whole without tokenization.
-It is suitable for data such as IDs (such as the docno field in our example corpus).
-Some IR systems support storing and indexing numeric values 
-(and you can search for indexed numeric values using range or greater-than/less-than queries).
+It is suitable for data fields such as IDs (such as the docno field in our example corpus).
 * **Normal text field** is suitable for regular text contents (such as the other four fields in our example corpus).
-The texts are tokenized and indexed (using inverted index), such that you can search using normal text retrieval techniques.
+The texts are tokenized and indexed (using inverted index), such that you can search using normal text retrieval techniques. 
+
+Some IR systems also support storing and indexing numeric values
+(and you can search for indexed numeric values using range or greater-than/less-than queries) and other data types.
 
 ### Lucene Examples
 
 This is an example program that uses Lucene to build an index for the example corpus. 
 ```java
-// change the following input and output paths to your local ones
-String pathCorpus = "/Users/jiepu/Downloads/example_corpus.gz";
-String pathIndex = "/Users/jiepu/Downloads/example_index_lucene";
-
-Directory dir = FSDirectory.open( new File( pathIndex ).toPath() );
-
-// Analyzer specifies options for text processing
-Analyzer analyzer = new Analyzer() {
-    @Override
-    protected TokenStreamComponents createComponents( String fieldName ) {
-        // Step 1: tokenization (Lucene's StandardTokenizer is suitable for most text retrieval occasions)
-        TokenStreamComponents ts = new TokenStreamComponents( new StandardTokenizer() );
-        // Step 2: transforming all tokens into lowercased ones (recommended for the majority of the problems)
-        ts = new TokenStreamComponents( ts.getTokenizer(), new LowerCaseFilter( ts.getTokenStream() ) );
-        // Step 3: whether to remove stop words
-        // Uncomment the following line to remove stop words
-        // ts = new TokenStreamComponents( ts.getTokenizer(), new StopFilter( ts.getTokenStream(), StandardAnalyzer.ENGLISH_STOP_WORDS_SET ) );
-        // Step 4: whether to apply stemming
-        // Uncomment the following line to apply Krovetz or Porter stemmer
-        // ts = new TokenStreamComponents( ts.getTokenizer(), new KStemFilter( ts.getTokenStream() ) );
-        // ts = new TokenStreamComponents( ts.getTokenizer(), new PorterStemFilter( ts.getTokenStream() ) );
-        return ts;
-    }
-};
-
-IndexWriterConfig config = new IndexWriterConfig( analyzer );
-// Note that IndexWriterConfig.OpenMode.CREATE will override the original index in the folder
-config.setOpenMode( IndexWriterConfig.OpenMode.CREATE );
-
-IndexWriter ixwriter = new IndexWriter( dir, config );
-
-// This is the field setting for metadata field.
-FieldType fieldTypeMetadata = new FieldType();
-fieldTypeMetadata.setOmitNorms( true );
-fieldTypeMetadata.setIndexOptions( IndexOptions.DOCS );
-fieldTypeMetadata.setStored( true );
-fieldTypeMetadata.setTokenized( false );
-fieldTypeMetadata.freeze();
-
-// This is the field setting for normal text field.
-FieldType fieldTypeText = new FieldType();
-fieldTypeText.setIndexOptions( IndexOptions.DOCS_AND_FREQS_AND_POSITIONS );
-fieldTypeText.setStoreTermVectors( true );
-fieldTypeText.setStoreTermVectorPositions( true );
-fieldTypeText.setTokenized( true );
-fieldTypeText.setStored( true );
-fieldTypeText.freeze();
-
-// You need to iteratively read each document from the corpus file,
-// create a Document object for the parsed document, and add that
-// Document object by calling addDocument().
-
-// Well, the following only works for small text files. DO NOT follow this part in your homework!
-InputStream instream = new GZIPInputStream( new FileInputStream( pathCorpus ) );
-String corpusText = new String( IOUtils.toByteArray( instream ), "UTF-8" );
-instream.close();
-
-Pattern pattern = Pattern.compile(
-        "<DOC>.+?<DOCNO>(.+?)</DOCNO>.+?<TITLE>(.+?)</TITLE>.+?<AUTHOR>(.+?)</AUTHOR>.+?<SOURCE>(.+?)</SOURCE>.+?<TEXT>(.+?)</TEXT>.+?</DOC>",
-        Pattern.CASE_INSENSITIVE + Pattern.MULTILINE + Pattern.DOTALL
-);
-
-Matcher matcher = pattern.matcher( corpusText );
-
-while ( matcher.find() ) {
-
-    String docno = matcher.group( 1 ).trim();
-    String title = matcher.group( 2 ).trim();
-    String author = matcher.group( 3 ).trim();
-    String source = matcher.group( 4 ).trim();
-    String text = matcher.group( 5 ).trim();
-
-    // Create a Document object
-    Document d = new Document();
-    // Add each field to the document with the appropriate field type options
-    d.add( new Field( "docno", docno, fieldTypeMetadata ) );
-    d.add( new Field( "title", title, fieldTypeText ) );
-    d.add( new Field( "author", author, fieldTypeText ) );
-    d.add( new Field( "source", source, fieldTypeText ) );
-    d.add( new Field( "text", text, fieldTypeText ) );
-    // Add the document to index.
-    ixwriter.addDocument( d );
-}
-
-// remember to close both the index writer and the directory
-ixwriter.close();
-dir.close();
+  // change the following input and output paths to your local ones
+  String pathCorpus = "/home/jiepu/Downloads/example_corpus.gz";
+  String pathIndex = "/home/jiepu/Downloads/example_index_lucene";
+  
+  Directory dir = FSDirectory.open( new File( pathIndex ).toPath() );
+  
+  // Analyzer specifies options for text tokenization and normalization (e.g., stemming, stop words removal, case-folding)
+  Analyzer analyzer = new Analyzer() {
+      @Override
+      protected TokenStreamComponents createComponents( String fieldName ) {
+          // Step 1: tokenization (Lucene's StandardTokenizer is suitable for most text retrieval occasions)
+          TokenStreamComponents ts = new TokenStreamComponents( new StandardTokenizer() );
+          // Step 2: transforming all tokens into lowercased ones (recommended for the majority of the problems)
+          ts = new TokenStreamComponents( ts.getSource(), new LowerCaseFilter( ts.getTokenStream() ) );
+          // Step 3: whether to remove stop words (unnecessary to remove stop words unless you can't afford the extra disk space)
+          // Uncomment the following line to remove stop words
+          // ts = new TokenStreamComponents( ts.getSource(), new StopFilter( ts.getTokenStream(), EnglishAnalyzer.ENGLISH_STOP_WORDS_SET ) );
+          // Step 4: whether to apply stemming
+          // Uncomment one of the following two lines to apply Krovetz or Porter stemmer (Krovetz is more common for IR research)
+          ts = new TokenStreamComponents( ts.getSource(), new KStemFilter( ts.getTokenStream() ) );
+          // ts = new TokenStreamComponents( ts.getSource(), new PorterStemFilter( ts.getTokenStream() ) );
+          return ts;
+      }
+  };
+  
+  IndexWriterConfig config = new IndexWriterConfig( analyzer );
+  // Note that IndexWriterConfig.OpenMode.CREATE will override the original index in the folder
+  config.setOpenMode( IndexWriterConfig.OpenMode.CREATE );
+  // Lucene's default BM25Similarity stores document field length using a "low-precision" method.
+  // Use the BM25SimilarityOriginal to store the original document length values in index.
+  config.setSimilarity( new BM25SimilarityOriginal() );
+  
+  IndexWriter ixwriter = new IndexWriter( dir, config );
+  
+  // This is the field setting for metadata field (no tokenization, searchable, and stored).
+  FieldType fieldTypeMetadata = new FieldType();
+  fieldTypeMetadata.setOmitNorms( true );
+  fieldTypeMetadata.setIndexOptions( IndexOptions.DOCS );
+  fieldTypeMetadata.setStored( true );
+  fieldTypeMetadata.setTokenized( false );
+  fieldTypeMetadata.freeze();
+  
+  // This is the field setting for normal text field (tokenized, searchable, store document vectors)
+  FieldType fieldTypeText = new FieldType();
+  fieldTypeText.setIndexOptions( IndexOptions.DOCS_AND_FREQS_AND_POSITIONS );
+  fieldTypeText.setStoreTermVectors( true );
+  fieldTypeText.setStoreTermVectorPositions( true );
+  fieldTypeText.setTokenized( true );
+  fieldTypeText.setStored( true );
+  fieldTypeText.freeze();
+  
+  // You need to iteratively read each document from the example corpus file,
+  // create a Document object for the parsed document, and add that
+  // Document object by calling addDocument().
+  
+  // Well, the following only works for small text files. DO NOT follow this part for large dataset files.
+  InputStream instream = new GZIPInputStream( new FileInputStream( pathCorpus ) );
+  String corpusText = new String( IOUtils.toByteArray( instream ), "UTF-8" );
+  instream.close();
+  
+  Pattern pattern = Pattern.compile(
+      "<DOC>.+?<DOCNO>(.+?)</DOCNO>.+?<TITLE>(.+?)</TITLE>.+?<AUTHOR>(.+?)</AUTHOR>.+?<SOURCE>(.+?)</SOURCE>.+?<TEXT>(.+?)</TEXT>.+?</DOC>",
+      Pattern.CASE_INSENSITIVE + Pattern.MULTILINE + Pattern.DOTALL
+  );
+  
+  Matcher matcher = pattern.matcher( corpusText );
+  
+  while ( matcher.find() ) {
+  
+      String docno = matcher.group( 1 ).trim();
+      String title = matcher.group( 2 ).trim();
+      String author = matcher.group( 3 ).trim();
+      String source = matcher.group( 4 ).trim();
+      String text = matcher.group( 5 ).trim();
+      
+      // Create a Document object
+      Document d = new Document();
+      // Add each field to the document with the appropriate field type options
+      d.add( new Field( "docno", docno, fieldTypeMetadata ) );
+      d.add( new Field( "title", title, fieldTypeText ) );
+      d.add( new Field( "author", author, fieldTypeText ) );
+      d.add( new Field( "source", source, fieldTypeText ) );
+      d.add( new Field( "text", text, fieldTypeText ) );
+      // Add the document to the index
+      System.out.println( "indexing document " + docno );
+      ixwriter.addDocument( d );
+  }
+  
+  // remember to close both the index writer and the directory
+  ixwriter.close();
+  dir.close();
 ```
 
 You can download the Lucene index for the example corpus at https://github.com/jiepujiang/LuceneExamples/blob/master/example_index_lucene.tar.gz
@@ -236,7 +237,7 @@ IndexReader index = DirectoryReader.open( dir );
 
 // Now, start working with your index using the IndexReader object
 
-ixreader.numDocs(); // just an example; get the number of documents in the index
+index.numDocs(); // just an example: get the number of documents in the index
 
 // Remember to close both the IndexReader and the Directory after use 
 index.close();
@@ -253,7 +254,7 @@ These IDs are often subject to change and not transparent to the users.
 So you often need to transform between external and internal IDs when locating documents in an index.
 
 To help you get started quickly, we provide
-a utility class ```edu.vt.cs.ir.lucene.utils.LuceneUtils``` to help you transform between 
+a utility class ```edu.wisc.ischool.wiscir.utils.LuceneUtils``` to help you transform between 
 the two IDs.
 ```java
 IndexReader index = DirectoryReader.open( dir );
@@ -278,7 +279,7 @@ The entries are sorted by docids such that you can efficiently compare and merge
 The following program retrieves the posting list for a term ```reformulation``` in the ```text``` field from the Lucene index:
 ```java
 String pathIndex = "/home/jiepu/Downloads/example_index_lucene";
-			
+
 // Let's just retrieve the posting list for the term "reformulation" in the "text" field
 String field = "text";
 String term = "reformulation";
@@ -290,7 +291,7 @@ IndexReader index = DirectoryReader.open( dir );
 // You need to encode the term into a BytesRef object,
 // which is the internal representation of a term used by Lucene.
 System.out.printf( "%-10s%-15s%-6s\n", "DOCID", "DOCNO", "FREQ" );
-PostingsEnum posting = MultiFields.getTermDocsEnum( index, field, new BytesRef( term ), PostingsEnum.FREQS );
+PostingsEnum posting = MultiTerms.getTermPostingsEnum( index, field, new BytesRef( term ), PostingsEnum.FREQS );
 if ( posting != null ) { // if the term does not appear in any document, the posting object may be null
     int docid;
     // Each time you call posting.nextDoc(), it moves the cursor of the posting list to the next position
@@ -310,8 +311,9 @@ dir.close();
 The output is:
 ```
 DOCID     DOCNO          FREQ  
+0         ACM-2009969    1     
 3         ACM-2010085    1     
-10        ACM-1835626    2     
+10        ACM-1835626    4     
 24        ACM-1277796    1     
 94        ACM-2484096    1     
 98        ACM-2348355    4     
@@ -343,7 +345,7 @@ fieldset.add( "docno" );
 // You need to encode the term into a BytesRef object,
 // which is the internal representation of a term used by Lucene.
 System.out.printf( "%-10s%-15s%-10s%-20s\n", "DOCID", "DOCNO", "FREQ", "POSITIONS" );
-PostingsEnum posting = MultiFields.getTermDocsEnum( index, field, new BytesRef( term ), PostingsEnum.POSITIONS );
+PostingsEnum posting = MultiTerms.getTermPostingsEnum( index, field, new BytesRef( term ), PostingsEnum.POSITIONS );
 if ( posting != null ) { // if the term does not appear in any document, the posting object may be null
     int docid;
     // Each time you call posting.nextDoc(), it moves the cursor of the posting list to the next position
@@ -369,8 +371,9 @@ dir.close();
 The output is:
 ```
 DOCID     DOCNO          FREQ      POSITIONS           
+0         ACM-2009969    1         117
 3         ACM-2010085    1         56
-10        ACM-1835626    2         1,73
+10        ACM-1835626    4         1,35,73,88
 24        ACM-1277796    1         157
 94        ACM-2484096    1         12
 98        ACM-2348355    4         84,117,156,177
@@ -417,13 +420,14 @@ while ( ( term = terms.next() ) != null ) {
         System.out.print( ( i > 0 ? "," : "" ) + positions.nextPosition() );
     }
     System.out.println();
-    
 }
 
 index.close();
 dir.close();
+
 ```
 
+The output is:
 ```
 TERM                FREQ      POSITIONS           
 1,800               1         92
@@ -431,7 +435,7 @@ TERM                FREQ      POSITIONS
 95                  1         148
 a                   2         19,119
 acquire             1         86
-algorithms          1         84
+algorithm           1         84
 along               1         100
 analysis            1         103
 and                 3         42,111,132
@@ -447,22 +451,19 @@ best                1         36
 between             1         106
 by                  1         147
 can                 1         144
-completeness        1         15
+complete            1         15
 cost                1         130
 deal                1         21
-deeper              1         102
-document            1         82
-documents           1         39
+deep                1         102
+document            2         39,82
 dozen               1         9
 each                1         11
 effective           1         131
 effort              2         72,143
-errors              1         155
+error               1         155
 estimate            1         45
-evaluate            1         62
-evaluation          5         2,26,46,121,154
-few                 1         49
-fewer               2         126,136
+evaluate            6         2,26,46,62,121,154
+few                 3         49,126,136
 for                 1         89
 great               1         20
 has                 2         3,17
@@ -470,17 +471,14 @@ how                 2         32,43
 in                  2         53,153
 increase            1         152
 information         1         0
-investigating       1         104
+investigate         1         104
 is                  1         128
 it                  1         57
-judge               1         41
-judged              1         12
-judging             1         71
-judgment            1         30
-judgments           5         50,88,114,127,140
+judge               3         12,41,71
+judgment            6         30,50,88,114,127,140
 light               1         54
 many                1         64
-measures            1         47
+measure             1         47
 million             1         74
 more                6         65,69,90,123,129,139
 much                2         28,68
@@ -490,26 +488,24 @@ number              2         108,112
 of                  6         22,38,55,97,109,113
 on                  1         25
 over                4         7,27,63,122
-performed           1         6
+perform             1         6
 point               1         120
 possible            1         60
 present             1         95
-queries             6         10,66,93,110,124,137
-query               1         75
+query               7         10,66,75,93,110,124,137
 recent              1         23
-reduced             1         146
+reduce              1         146
 relevance           1         87
 reliable            1         134
-results             1         96
+result              1         96
 retrieval           1         1
 select              1         34
 selection           1         83
-set                 1         37
-sets                1         31
+set                 2         31,37
 several             1         8
 should              1         58
-shows               1         115
-smaller             1         29
+show                1         115
+small               1         29
 than                1         91
 that                1         116
 the                 4         35,73,98,107
@@ -518,12 +514,12 @@ this                1         56
 to                  7         13,33,40,44,61,85,118
 total               2         70,141
 track               2         76,99
-tradeoffs           1         105
+tradeoff            1         105
 trec                1         78
 two                 1         81
 typically           1         4
 up                  1         117
-used                1         80
+use                 1         80
 we                  1         94
 when                1         48
 with                4         101,125,138,149
@@ -531,19 +527,14 @@ without             1         67
 work                1         24
 ```
 
-There are some slight differences between the results by Lucene and Galago.
-They are caused by the differences of the two systems in default tokenization. 
-For example, Lucene will not split 1,800 into two tokens but Galado will.
-
 ### Document and Field Length
 
-Unfortunately, by the time I created the tutorial, Lucene does not store document length (the total word count) in its index. 
-An acceptable but slow solution is that you calculate document length by yourself based on a document
-vector. In case your dataset is static and relatively small (such as just about or less than a few
-million documents), you can simply compute all documents' lengths after you've built an index and store
-them in an external file (it takes just 4MB to store 1 million docs' lengths as integers). At running
-time, you can load all the computed document lengths into memory to avoid loading doc vector and computing length again.
+By default, Lucene stores some low-precision values of field length as a form of "document norms" (see Lucene's ```org.apache.lucene.search.similarities.BM25Similarity.computeNorm(FieldInvertState state)```  for details). 
+You can implement a customized Similarity class to store the full-precision document field length values.
+We have provided an example at ```edu.wisc.ischool.wiscir.examples.BM25SimilarityOriginal```. 
+You will be able to access document length at search time (see ```edu.wisc.ischool.wiscir.examples.BM25SimilarityOriginal.BM25Scorer```).
 
+You may also compute the document field length on your own if you have stored document vectors at indexing time.
 The following program prints out the length of text field for each document in the example corpus, 
 which also helps you understand how to work with a stored document vector:
 ```java
@@ -693,26 +684,14 @@ DOCID     DOCNO          Length
 107       ACM-2609536    194       
 ```
 
-An alternative (and faster) way is to store the length information of an index field to a file 
-(sorted by docid), such that you can efficiently search for the length of a particular docid. 
-We provided a simple implementation of this method in ```edu.vt.cs.ir.utils.DocLengthReader```.
-After building a regular Lucene index, you can use ```DocLengthReader```'s main function to dump 
-document length statistics to a file (by default, ```DocLengthReader``` outputs to a file in the
-Lucene index directory with name ```dl.$fieldname```). ```DocLengthReader.getLength(docid)``` 
-offers the functionality of searching document length.
-
-Note that Lucene's internal docid is subject to change if you make any changes to the index 
-(such as adding & removing an indexed document, merging several indexes, or optimizing an 
-existing index). As a result, you need to update the external document length files every time
-you have updated Lucene's index. However, this would not cause much concerns in our course because 
-we'll only work with static test collections.
-
 ### Iterate Through the Vocabulary 
 
 The following program iterates through the vocabulary and print out the first 100 words in the 
 vocabulary and some word statistics.
 ```java
-String pathIndex = "/Users/jiepu/Downloads/example_index_lucene";
+String pathIndex = "/home/jiepu/Downloads/example_index_lucene";
+
+// Let's just retrieve the vocabulary of the "text" field
 String field = "text";
 
 Directory dir = FSDirectory.open( new File( pathIndex ).toPath() );
@@ -724,7 +703,8 @@ double corpusLength = index.getSumTotalTermFreq( field );
 System.out.printf( "%-30s%-10s%-10s%-10s%-10s\n", "TERM", "DF", "TOTAL_TF", "IDF", "p(w|c)" );
 
 // Get the vocabulary of the index.
-Terms voc = MultiFields.getTerms( index, field );
+
+Terms voc = MultiTerms.getTerms( index, field );
 // You need to use TermsEnum to iterate each entry of the vocabulary.
 TermsEnum termsEnum = voc.iterator();
 BytesRef term;
@@ -732,11 +712,11 @@ int count = 0;
 while ( ( term = termsEnum.next() ) != null ) {
     count++;
     String termstr = term.utf8ToString(); // get the text string of the term
-    int df = termsEnum.docFreq(); // get the document frequency (DF) of the term
+    int n = termsEnum.docFreq(); // get the document frequency (DF) of the term
     long freq = termsEnum.totalTermFreq(); // get the total frequency of the term
-    double idf = Math.log( ( N + 1 ) / ( df + 1 ) );
+    double idf = Math.log( ( N + 1.0 ) / ( n + 1.0 ) ); // well, we normalize N and n by adding 1 to avoid n = 0
     double pwc = freq / corpusLength;
-    System.out.printf( "%-30s%-10d%-10d%-10.2f%-10.8f\n", termstr, df, freq, idf, pwc );
+    System.out.printf( "%-30s%-10d%-10d%-10.2f%-10.8f\n", termstr, n, freq, idf, pwc );
     if ( count >= 100 ) {
         break;
     }
@@ -787,68 +767,68 @@ TERM                          DF        TOTAL_TF  IDF       p(w|c)
 94                            1         1         4.00      0.00008280
 95                            3         4         3.31      0.00033121
 a                             80        338       0.30      0.02798708
-abandonment                   1         1         4.00      0.00008280
+abandon                       1         1         4.00      0.00008280
 ability                       5         6         2.90      0.00049681
 able                          4         4         3.08      0.00033121
 about                         5         11        2.90      0.00091082
 above                         2         2         3.59      0.00016560
 absence                       1         1         4.00      0.00008280
-abstract                      27        27        1.36      0.00223565
-abstracts                     2         2         3.59      0.00016560
+abstract                      29        29        1.29      0.00240126
 academic                      1         1         4.00      0.00008280
+accept                        1         1         4.00      0.00008280
 acceptable                    1         1         4.00      0.00008280
 acceptance                    1         1         4.00      0.00008280
-accepted                      1         1         4.00      0.00008280
-access                        3         6         3.31      0.00049681
-accessing                     1         1         4.00      0.00008280
+access                        4         7         3.08      0.00057961
 accomplished                  1         1         4.00      0.00008280
 according                     4         5         3.08      0.00041401
 account                       1         1         4.00      0.00008280
 accumulator                   1         1         4.00      0.00008280
 accuracy                      7         12        2.61      0.00099362
-accurate                      4         4         3.08      0.00033121
-accurately                    1         1         4.00      0.00008280
-achieve                       4         5         3.08      0.00041401
-achieved                      5         5         2.90      0.00041401
-achievements                  1         1         4.00      0.00008280
-achieves                      3         3         3.31      0.00024841
-achieving                     4         5         3.08      0.00041401
-acknowledged                  1         1         4.00      0.00008280
+accurate                      4         5         3.08      0.00041401
+achieve                       14        18        1.98      0.00149044
+achievement                   1         1         4.00      0.00008280
+acknowledge                   1         1         4.00      0.00008280
 acm                           1         1         4.00      0.00008280
-acquire                       1         1         4.00      0.00008280
-acquiring                     1         1         4.00      0.00008280
+acquire                       2         2         3.59      0.00016560
 across                        6         8         2.75      0.00066242
-actions                       1         1         4.00      0.00008280
-activeness                    1         1         4.00      0.00008280
+action                        1         1         4.00      0.00008280
+active                        1         1         4.00      0.00008280
 actual                        2         2         3.59      0.00016560
 actually                      1         1         4.00      0.00008280
 ad                            5         6         2.90      0.00049681
-adapting                      1         1         4.00      0.00008280
-adaptive                      2         5         3.59      0.00041401
-added                         2         2         3.59      0.00016560
+adapt                         3         6         3.31      0.00049681
+add                           2         2         3.59      0.00016560
 addition                      4         4         3.08      0.00033121
 additional                    3         3         3.31      0.00024841
-address                       4         4         3.08      0.00033121
-addressable                   1         1         4.00      0.00008280
-addressing                    2         2         3.59      0.00016560
+address                       7         7         2.61      0.00057961
 adequate                      1         1         4.00      0.00008280
 adhoc                         1         1         4.00      0.00008280
-adopted                       2         2         3.59      0.00016560
+adopt                         2         2         3.59      0.00016560
 advance                       1         1         4.00      0.00008280
 advanced                      1         1         4.00      0.00008280
 advances                      3         4         3.31      0.00033121
-advantages                    3         3         3.31      0.00024841
+advantage                     3         3         3.31      0.00024841
 advent                        1         1         4.00      0.00008280
 affected                      2         2         3.59      0.00016560
 affecting                     1         1         4.00      0.00008280
 affinity                      1         1         4.00      0.00008280
 after                         2         2         3.59      0.00016560
 against                       2         3         3.59      0.00024841
-aggregated                    1         1         4.00      0.00008280
+aggregate                     1         1         4.00      0.00008280
 ai                            1         2         4.00      0.00016560
-aimed                         1         1         4.00      0.00008280
-aims                          1         1         4.00      0.00008280
-airlines                      1         1         4.00      0.00008280
+aim                           2         2         3.59      0.00016560
+airline                       1         1         4.00      0.00008280
+algorithm                     13        19        2.05      0.00157324
+all                           10        13        2.29      0.00107643
+allocation                    1         1         4.00      0.00008280
+allow                         6         7         2.75      0.00057961
+allowance                     1         1         4.00      0.00008280
+alone                         3         3         3.31      0.00024841
+along                         1         1         4.00      0.00008280
+also                          19        20        1.70      0.00165604
+alternative                   2         2         3.59      0.00016560
+although                      5         6         2.90      0.00049681
+always                        3         4         3.31      0.00033121
 ```
 
 ### Corpus-level Statistics
@@ -857,7 +837,7 @@ airlines                      1         1         4.00      0.00008280
 The follow program computes the IDF and corpus probability for the term ```reformulation```.
 ```java
 String pathIndex = "/home/jiepu/Downloads/example_index_lucene";
-			
+
 // Let's just count the IDF and P(w|corpus) for the word "reformulation" in the "text" field
 String field = "text";
 String term = "reformulation";
@@ -867,7 +847,7 @@ IndexReader index = DirectoryReader.open( dir );
 
 int N = index.numDocs(); // the total number of documents in the index
 int n = index.docFreq( new Term( field, term ) ); // get the document frequency of the term in the "text" field
-double idf = Math.log( ( N + 1 ) / ( n + 1 ) ); // well, we normalize N and n by adding 1 to avoid n = 0
+double idf = Math.log( ( N + 1.0 ) / ( n + 1.0 ) ); // well, we normalize N and n by adding 1 to avoid n = 0
 
 System.out.printf( "%-30sN=%-10dn=%-10dIDF=%-8.2f\n", term, N, n, idf );
 
@@ -884,87 +864,84 @@ dir.close();
 
 The output is:
 ```
-reformulation                 N=108       n=6         IDF=2.71    
-reformulation                 len(corpus)=12077     freq(reformulation)=10        P(reformulation|corpus)=0.000828
+reformulation                 N=108       n=7         IDF=2.61    
+reformulation                 len(corpus)=12077     freq(reformulation)=13        P(reformulation|corpus)=0.001076  
 ```
 
 ## Searching
 
-We will not use Lucene's own search functionalities much in this course.
-But just to help you get started with, the following program retrieves the top 10 
-articles for the query "query reformulation" from the example corpus using a variant 
-of the BM25 retrieval model (implemented in Lucene).
+The following program retrieves the top 10 articles for the query "query reformulation" 
+from the example corpus using the BM25 search model. Note that we used the provided ```BM25SimilarityOriginal``` class for search because we built the example index using this class.
+If you built your index based on Lucene's default ```BM25Similarity```, you should use the default ```BM25Similarity``` for BM25 search.  
 
 ```java
-String pathIndex = "/Users/jiepu/Downloads/example_index_lucene";
-
-// Just like building an index, we also need an Analyzer to process the query strings
-Analyzer analyzer = new Analyzer() {
-    @Override
-    protected TokenStreamComponents createComponents( String fieldName ) {
-        // Step 1: tokenization (Lucene's StandardTokenizer is suitable for most text retrieval occasions)
-        TokenStreamComponents ts = new TokenStreamComponents( new StandardTokenizer() );
-        // Step 2: transforming all tokens into lowercased ones (recommended for the majority of the problems)
-        ts = new TokenStreamComponents( ts.getTokenizer(), new LowerCaseFilter( ts.getTokenStream() ) );
-        // Step 3: whether to remove stop words
-        // Uncomment the following line to remove stop words
-        // ts = new TokenStreamComponents( ts.getTokenizer(), new StopFilter( ts.getTokenStream(), StandardAnalyzer.ENGLISH_STOP_WORDS_SET ) );
-        // Step 4: whether to apply stemming
-        // Uncomment the following line to apply Krovetz or Porter stemmer
-        // ts = new TokenStreamComponents( ts.getTokenizer(), new KStemFilter( ts.getTokenStream() ) );
-        // ts = new TokenStreamComponents( ts.getTokenizer(), new PorterStemFilter( ts.getTokenStream() ) );
-        return ts;
-    }
-};
-
-String field = "text"; // the field you hope to search for
-QueryParser parser = new QueryParser( field, analyzer ); // a query parser that transforms a text string into Lucene's query object
-
-String qstr = "query reformulation"; // this is the textual search query
-Query query = parser.parse( qstr ); // this is Lucene's query object
-
-// Okay, now let's open an index and search for documents
-Directory dir = FSDirectory.open( new File( pathIndex ).toPath() );
-IndexReader index = DirectoryReader.open( dir );
-
-// you need to create a Lucene searcher
-IndexSearcher searcher = new IndexSearcher( index );
-
-// Lucene's default ranking model is VSM, but it has also implemented a wide variety of retrieval models.
-// Tell Lucene to rank results using the BM25 retrieval model.
-// Note that Lucene's implementation of BM25 is somehow different from the one we'll cover in class.
-searcher.setSimilarity( new BM25Similarity() );
-
-int top = 10; // Let's just retrieve the talk 10 results
-TopDocs docs = searcher.search( query, top ); // retrieve the top 10 results; retrieved results are stored in TopDocs
-
-System.out.printf( "%-10s%-20s%-10s%s\n", "Rank", "DocNo", "Score", "Title" );
-int rank = 1;
-for ( ScoreDoc scoreDoc : docs.scoreDocs ) {
-    int docid = scoreDoc.doc;
-    double score = scoreDoc.score;
-    String docno = LuceneUtils.getDocno( index, "docno", docid );
-    String title = LuceneUtils.getDocno( index, "title", docid );
-    System.out.printf( "%-10d%-20s%-10.4f%s\n", rank, docno, score, title );
-    rank++;
-}
-
-// remember to close the index and the directory
-index.close();
-dir.close();
+  String pathIndex = "/home/jiepu/Downloads/example_index_lucene";
+  
+  // Analyzer specifies options for text tokenization and normalization (e.g., stemming, stop words removal, case-folding)
+  Analyzer analyzer = new Analyzer() {
+      @Override
+      protected TokenStreamComponents createComponents( String fieldName ) {
+          // Step 1: tokenization (Lucene's StandardTokenizer is suitable for most text retrieval occasions)
+          TokenStreamComponents ts = new TokenStreamComponents( new StandardTokenizer() );
+          // Step 2: transforming all tokens into lowercased ones (recommended for the majority of the problems)
+          ts = new TokenStreamComponents( ts.getSource(), new LowerCaseFilter( ts.getTokenStream() ) );
+          // Step 3: whether to remove stop words (unnecessary to remove stop words unless you can't afford the extra disk space)
+          // Uncomment the following line to remove stop words
+          // ts = new TokenStreamComponents( ts.getSource(), new StopFilter( ts.getTokenStream(), EnglishAnalyzer.ENGLISH_STOP_WORDS_SET ) );
+          // Step 4: whether to apply stemming
+          // Uncomment one of the following two lines to apply Krovetz or Porter stemmer (Krovetz is more common for IR research)
+          ts = new TokenStreamComponents( ts.getSource(), new KStemFilter( ts.getTokenStream() ) );
+          // ts = new TokenStreamComponents( ts.getSource(), new PorterStemFilter( ts.getTokenStream() ) );
+          return ts;
+      }
+  };
+  
+  String field = "text"; // the field you hope to search for
+  QueryParser parser = new QueryParser( field, analyzer ); // a query parser that transforms a text string into Lucene's query object
+  
+  String qstr = "query reformulation"; // this is the textual search query
+  Query query = parser.parse( qstr ); // this is Lucene's query object
+  
+  // Okay, now let's open an index and search for documents
+  Directory dir = FSDirectory.open( new File( pathIndex ).toPath() );
+  IndexReader index = DirectoryReader.open( dir );
+  
+  // you need to create a Lucene searcher
+  IndexSearcher searcher = new IndexSearcher( index );
+  
+  // make sure the similarity class you are using is consistent with those being used for indexing
+  searcher.setSimilarity( new BM25SimilarityOriginal() );
+  
+  int top = 10; // Let's just retrieve the talk 10 results
+  TopDocs docs = searcher.search( query, top ); // retrieve the top 10 results; retrieved results are stored in TopDocs
+  
+  System.out.printf( "%-10s%-20s%-10s%s\n", "Rank", "DocNo", "Score", "Title" );
+  int rank = 1;
+  for ( ScoreDoc scoreDoc : docs.scoreDocs ) {
+      int docid = scoreDoc.doc;
+      double score = scoreDoc.score;
+      String docno = LuceneUtils.getDocno( index, "docno", docid );
+      String title = LuceneUtils.getDocno( index, "title", docid );
+      System.out.printf( "%-10d%-20s%-10.4f%s\n", rank, docno, score, title );
+      rank++;
+  }
+  
+  // remember to close the index and the directory
+  index.close();
+  dir.close();
 ```
 
 The output is:
 ```
 Rank      DocNo               Score     Title
-1         ACM-2348355         5.7742    Generating reformulation trees for complex queries
-2         ACM-1835626         5.2476    Learning to rank query reformulations
-3         ACM-2010085         4.3674    Modeling subset distributions for verbose queries
-4         ACM-1277796         3.8501    Latent concept expansion using markov random fields
-5         ACM-2484096         3.7127    Compact query term selection using topically related text
-6         ACM-2609633         2.8809    Searching, browsing, and clicking in a search session: changes in user behavior by task and over time
-7         ACM-1835637         1.6526    Query term ranking based on dependency parsing of verbose queries
-8         ACM-2348408         1.6438    Modeling higher-order term dependencies in information retrieval using query hypergraphs
-9         ACM-2609467         1.6367    Diversifying query suggestions based on query documents
-10        ACM-1572140         1.6168    Two-stage query segmentation for information retrieval
+1         ACM-1835626         4.7595    Learning to rank query reformulations
+2         ACM-2348355         4.3059    Generating reformulation trees for complex queries
+3         ACM-2010085         2.9168    Modeling subset distributions for verbose queries
+4         ACM-1277796         2.5193    Latent concept expansion using markov random fields
+5         ACM-2484096         2.3669    Compact query term selection using topically related text
+6         ACM-2009969         2.3407    CrowdLogging: distributed, private, and anonymous search logging
+7         ACM-2609633         2.0099    Searching, browsing, and clicking in a search session: changes in user behavior by task and over time
+8         ACM-2609467         0.3593    Diversifying query suggestions based on query documents
+9         ACM-1835637         0.3551    Query term ranking based on dependency parsing of verbose queries
+10        ACM-2348408         0.3544    Modeling higher-order term dependencies in information retrieval using query hypergraphs
 ```

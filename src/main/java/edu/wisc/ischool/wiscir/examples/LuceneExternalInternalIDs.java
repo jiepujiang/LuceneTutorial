@@ -1,6 +1,6 @@
-package edu.vt.cs.ir.examples;
+package edu.wisc.ischool.wiscir.examples;
 
-import edu.vt.cs.ir.utils.LuceneUtils;
+import edu.wisc.ischool.wiscir.utils.LuceneUtils;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.Directory;
@@ -13,8 +13,8 @@ import java.util.TreeSet;
 /**
  * The is an example for transforming between internal and external IDs in Lucene indexes.
  *
- * @author Jiepu Jiang (jiepu@cs.vt.edu)
- * @version 2018-08-21
+ * @author Jiepu Jiang (jiepu.jiang@wisc.edu)
+ * @version 2021-04-12
  */
 public class LuceneExternalInternalIDs {
 
@@ -22,7 +22,7 @@ public class LuceneExternalInternalIDs {
         try {
 
             // change to your index path
-            String pathIndex = "/Users/jiepu/Downloads/example_index_lucene";
+            String pathIndex = "/home/jiepu/Downloads/example_index_lucene";
 
             // the name of the external ID (docno) field
             String fieldName = "docno";

@@ -1,8 +1,11 @@
-package edu.vt.cs.ir.examples;
+package edu.wisc.ischool.wiscir.examples;
 
-import edu.vt.cs.ir.utils.LuceneUtils;
+import edu.wisc.ischool.wiscir.utils.LuceneUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.LowerCaseFilter;
+import org.apache.lucene.analysis.StopFilter;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
+import org.apache.lucene.analysis.en.KStemFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -20,31 +23,31 @@ import java.io.File;
 /**
  * This is an example of accessing corpus statistics and corpus-level term statistics.
  *
- * @author Jiepu Jiang (jiepu@cs.vt.edu)
- * @version 2018-08-21
+ * @author Jiepu Jiang (jiepu.jiang@wisc.edu)
+ * @version 2021-04-12
  */
 public class LuceneSearchExample {
 
     public static void main( String[] args ) {
         try {
 
-            String pathIndex = "/Users/jiepu/Downloads/example_index_lucene";
+            String pathIndex = "/home/jiepu/Downloads/example_index_lucene";
 
-            // Just like building an index, we also need an Analyzer to process the query strings
+            // Analyzer specifies options for text tokenization and normalization (e.g., stemming, stop words removal, case-folding)
             Analyzer analyzer = new Analyzer() {
                 @Override
                 protected TokenStreamComponents createComponents( String fieldName ) {
                     // Step 1: tokenization (Lucene's StandardTokenizer is suitable for most text retrieval occasions)
                     TokenStreamComponents ts = new TokenStreamComponents( new StandardTokenizer() );
                     // Step 2: transforming all tokens into lowercased ones (recommended for the majority of the problems)
-                    ts = new TokenStreamComponents( ts.getTokenizer(), new LowerCaseFilter( ts.getTokenStream() ) );
-                    // Step 3: whether to remove stop words
+                    ts = new TokenStreamComponents( ts.getSource(), new LowerCaseFilter( ts.getTokenStream() ) );
+                    // Step 3: whether to remove stop words (unnecessary to remove stop words unless you can't afford the extra disk space)
                     // Uncomment the following line to remove stop words
-                    // ts = new TokenStreamComponents( ts.getTokenizer(), new StopFilter( ts.getTokenStream(), StandardAnalyzer.ENGLISH_STOP_WORDS_SET ) );
+                    // ts = new TokenStreamComponents( ts.getSource(), new StopFilter( ts.getTokenStream(), EnglishAnalyzer.ENGLISH_STOP_WORDS_SET ) );
                     // Step 4: whether to apply stemming
-                    // Uncomment the following line to apply Krovetz or Porter stemmer
-                    // ts = new TokenStreamComponents( ts.getTokenizer(), new KStemFilter( ts.getTokenStream() ) );
-                    // ts = new TokenStreamComponents( ts.getTokenizer(), new PorterStemFilter( ts.getTokenStream() ) );
+                    // Uncomment one of the following two lines to apply Krovetz or Porter stemmer (Krovetz is more common for IR research)
+                    ts = new TokenStreamComponents( ts.getSource(), new KStemFilter( ts.getTokenStream() ) );
+                    // ts = new TokenStreamComponents( ts.getSource(), new PorterStemFilter( ts.getTokenStream() ) );
                     return ts;
                 }
             };
@@ -62,10 +65,8 @@ public class LuceneSearchExample {
             // you need to create a Lucene searcher
             IndexSearcher searcher = new IndexSearcher( index );
 
-            // Lucene's default ranking model is VSM, but it has also implemented a wide variety of retrieval models.
-            // Tell Lucene to rank results using the BM25 retrieval model.
-            // Note that Lucene's implementation of BM25 is somehow different from the one we'll cover in class.
-            searcher.setSimilarity( new BM25Similarity() );
+            // make sure the similarity class you are using is consistent with those being used for indexing
+            searcher.setSimilarity( new BM25SimilarityOriginal() );
 
             int top = 10; // Let's just retrieve the talk 10 results
             TopDocs docs = searcher.search( query, top ); // retrieve the top 10 results; retrieved results are stored in TopDocs
