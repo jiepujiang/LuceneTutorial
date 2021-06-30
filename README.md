@@ -553,13 +553,6 @@ System.out.printf( "%-10s%-15s%-10s\n", "DOCID", "DOCNO", "Length" );
 for ( int docid = 0; docid < ixreader.maxDoc(); docid++ ) {
     String docno = ixreader.document( docid, fieldset ).get( "docno" );
     int doclen = 0;
-    // Unfortunately, Lucene does not store document length in its index
-    // (because its retrieval model does not rely on document length).
-    // An acceptable but slow solution is that you calculate document length by yourself based on
-    // document vector. In case your dataset is static and relatively small (such as about or less
-    // than a few million documents), you can simply compute the document lengths and store them in
-    // an external file (it takes just a few MB). At running time, you can load all the computed
-    // document lengths to avoid loading doc vector and computing length.
     TermsEnum termsEnum = ixreader.getTermVector( docid, field ).iterator();
     while ( termsEnum.next() != null ) {
         doclen += termsEnum.totalTermFreq();
