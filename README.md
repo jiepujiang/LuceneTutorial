@@ -1,8 +1,8 @@
 
-## UW-Madison LIS640: Introduction to Text Mining (Spring 2021)
-## A Simple Tutorial of Lucene
+## UW-Madison LIS 501: Introduction to Text Mining (Fall 2021)
+## A Simple Tutorial of Lucene's Indexing and Search Systems
 
-_Last Update: April 12, 2021_
+_Last Update: Oct 30, 2021_
 
 You can find the source codes of all examples in ```edu.wisc.ischool.wiscir.examples```.
 
@@ -23,7 +23,7 @@ Outline:
 
 This tutorial uses:
 * Oracle JDK 11
-* Lucene 8.8.2
+* Lucene 8.10.1
 
 ## Installation
 
@@ -36,7 +36,7 @@ You need to at least import ```lucene-core``` (just pasting the following to you
 <dependency>
     <groupId>org.apache.lucene</groupId>
     <artifactId>lucene-core</artifactId>
-    <version>8.8.2</version>
+    <version>8.10.1</version>
 </dependency>
 ```
 
@@ -46,21 +46,21 @@ You may also need ```lucene-analyzers-common``` and ```lucene-queryparser```.
 <dependency>
     <groupId>org.apache.lucene</groupId>
     <artifactId>lucene-analyzers-common</artifactId>
-    <version>8.8.2</version>
+    <version>8.10.1</version>
 </dependency>
 <dependency>
     <groupId>org.apache.lucene</groupId>
     <artifactId>lucene-queryparser</artifactId>
-    <version>8.8.2</version>
+    <version>8.10.1</version>
 </dependency>
 ```
 
 If you do not use Maven, you need to download the jar files by yourself and include them into your project.
 Make sure you download the correct version.
-http://archive.apache.org/dist/lucene/java/8.8.2/
+http://archive.apache.org/dist/lucene/java/8.10.1/
 
 Support:
-* Official API documentation: http://lucene.apache.org/core/8_8_2/
+* Official API documentation: http://lucene.apache.org/core/8_10_1/
 
 ## Build an Index
 
